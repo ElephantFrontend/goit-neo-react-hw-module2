@@ -2,28 +2,29 @@ import { useEffect, useState } from 'react'
 import Description from "./components/description/description.jsx";
 import Feedback from "./components/feedback/feedback.jsx";
 import Options from "./components/options/options.jsx";
+import Notification from "./components/notification/notification.jsx";
 
 function App() {
-  const [feedback, setFeedback] = useState({
-      good: 0,
-      neutral: 0,
-      bad: 0
-  });
-
-  const totalFeedback = feedback.good + feedback.neutral + feedback.bad;
-  const positiveFeedback = Math.round((feedback.good / totalFeedback) * 100);
-
-  useEffect(() => {
+  const [feedback, setFeedback] = useState(() => {
       const savedFeedback = localStorage.getItem('feedback');
 
       if (savedFeedback) {
           try {
-              setFeedback(JSON.parse(savedFeedback));
-          } catch (error) {
-              console.error('Invalid localStorage data:', error);
+              return JSON.parse(savedFeedback);
+          } catch {
+              console.error('Invalid localStorage data');
           }
       }
-  }, []);
+
+      return {
+          good: 0,
+          neutral: 0,
+          bad: 0
+      };
+  });
+
+  const totalFeedback = feedback.good + feedback.neutral + feedback.bad;
+  const positiveFeedback = Math.round((feedback.good / totalFeedback) * 100);
 
   useEffect(() => {
       localStorage.setItem('feedback', JSON.stringify(feedback));
@@ -58,11 +59,15 @@ function App() {
             resetFeedback={resetFeedback}>
         </Options>
 
-        <Feedback
-            feedback={feedback}
-            totalFeedback={totalFeedback}
-            positiveFeedback={positiveFeedback}>
-        </Feedback>
+        {totalFeedback === 0 ? (
+            <Notification></Notification>
+        ) : (
+            <Feedback
+                feedback={feedback}
+                totalFeedback={totalFeedback}
+                positiveFeedback={positiveFeedback}>
+            </Feedback>
+        )}
     </>
   )
 }
